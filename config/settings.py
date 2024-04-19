@@ -245,3 +245,6 @@ TEST_CASE_TYPES = [
 
 # Максимальный уровень приоритетов
 X_MAX_PRIORITY = 10
+
+# Переопределение переменных в local_settings
+from config.local_settings import *
