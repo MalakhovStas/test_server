@@ -1,0 +1,25 @@
+name: test-server-kf
+
+services:
+  redis:
+    container_name: redis_test-server-kf
+    image: redis
+    restart: always
+    ports:
+      - '9736:6379'
+    command: redis-server --loglevel debug
+
+  postgres:
+    container_name: postgres_test-server-kf
+    image: postgres
+    ports:
+      - '2345:5432'
+    environment:
+      POSTGRES_DB: "TestServerDb"
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "secret"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d TestServerDb -p 5432"]
+      interval: 30s
+      timeout: 10s
+      retries: 3

@@ -1,0 +1,70 @@
+{% extends 'admin/change_form.html' %}
+{% load static %}
+{% block object-tools %}
+    {{ block.super }}
+    {% block extrastyle %}
+    {{ block.super }}
+    <style></style>
+    {% endblock %}
+    <script>
+        function collectAndSendSelectedObjects() {
+            const checkboxes = document.querySelectorAll('.select-checkbox');
+            const selectedObjects = [];
+            let selectedAllTests = false;
+
+            checkboxes.forEach((checkbox) => {
+            if (checkbox.checked) {
+                const objectId = checkbox.getAttribute('object-id');
+                if (objectId === 'select_all_tests-checkbox') {
+                    selectedAllTests = true;
+                }
+                else {
+                        selectedObjects.push(objectId);
+                }
+            }
+            });
+            const selectedAllTestsInput = document.querySelector('[name="select-all-tests"]');
+            const selectedTestsIdInput = document.querySelector('[name="selected-tests-id"]');
+
+            if (selectedAllTests) {
+                selectedAllTestsInput.value = 'true';
+                selectedTestsIdInput.value = '';
+            }
+            else {
+                selectedAllTestsInput.value = 'false';
+                if (selectedObjects.length > 0) {
+                    selectedTestsIdInput.value = JSON.stringify(selectedObjects);
+                }
+            }
+        }
+    </script>
+
+    <form action="/admin/test_cases/project/process-selected-tests/" method="POST" onsubmit="collectAndSendSelectedObjects()" id="process-selected-tests-form">
+      {% csrf_token %}
+      <input name="from-path" type="text" hidden="hidden" value="{{ request.path }}"/>
+      <input name="project-title" type="text" hidden="hidden" value="{{ object_id.title }}"/>
+      <input name="selected-tests-id" type="text" hidden="hidden"/>
+      <input name="select-all-tests" type="text" hidden="hidden"/>
+      <button class="process-selected-tests-button" type="submit">▶️</button>
+    </form>
+
+    {% if 'task_id' in request.session %}
+        <br>
+        <div class='progress-wrapper'>
+            <div id='progress-bar' class='progress-bar' style="background-color: #68a9ef; width: 0%;">&nbsp;</div>
+        </div>
+        <div id="progress-bar-message" style="margin-bottom: 25px; margin-top: 25px; font-weight: bold">Запуск процесса тестирования...</div>
+
+        <script src="{% static 'celery_progress/celery_progress.js' %}"></script>
+
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+              var progressUrl = "{% url 'celery_progress:task_status' request.session.task_id %}";
+              CeleryProgressBar.initProgressBar(progressUrl);
+            });
+        </script>
+
+        <div id="celery-result" style="margin-bottom: 25px; margin-top: 25px; font-weight: bold"></div>
+        <br>
+    {% endif %}
+{% endblock %}
