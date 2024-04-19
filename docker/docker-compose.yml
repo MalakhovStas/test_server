@@ -12,6 +12,7 @@ services:
   postgres:
     container_name: postgres_test-server-kf
     image: postgres
+    restart: always
     ports:
       - '2345:5432'
     environment:
