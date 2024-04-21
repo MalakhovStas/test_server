@@ -5,7 +5,7 @@ import subprocess
 
 from celery_progress.backend import ProgressRecorder
 
-from config.settings import BASE_DIR
+from config.settings import BASE_DIR, DEBUG
 from test_cases.models import Project
 
 
@@ -17,8 +17,14 @@ class ProcessSelectedTests:
     general_docker_up_path = '/docker/up.sh'
     general_docker_down_path = '/docker/down.sh'
     projects_process_directory = 'projects'
-
     # sudo_password = ''
+
+    if DEBUG:
+        pytest = 'pytest'
+        poetry = ['poetry']
+    else:
+        pytest = '/projects/TestServer/test_server/.venv/bin/pytest'
+        poetry = ['sudo', '/root/.local/bin/poetry']
 
     def __init__(self, project: Project, progress: ProgressRecorder):
         self.project = project
@@ -71,20 +77,19 @@ class ProcessSelectedTests:
         """Установка зависимостей проекта"""
         os.chdir(f'{self.project_process_dir}')
         # subprocess.Popen(['poetry', 'config', 'virtualenvs.in-project', 'true']).wait()
-        # subprocess.Popen(['poetry', 'update']).wait()
-        subprocess.Popen(['sudo', '/root/.local/bin/poetry', 'update']).wait()
+        subprocess.Popen([*self.poetry, 'update']).wait()
         os.chdir(BASE_DIR)
 
     def run_tests(self, select_all_tests: bool, selected_tests: list):
         """Запуск тест кейсов проекта"""
         os.chdir(f'{self.project_process_dir}')
         if select_all_tests:
-            subprocess.Popen(['pytest']).wait()
+            subprocess.Popen([self.pytest]).wait()
         else:
             if selected_tests:
                 for test_case in selected_tests:
                     subprocess.Popen([
-                        'pytest',
+                        self.pytest,
                         f'{test_case.path}::{test_case.test_class.title}::{test_case.title}'
                     ]).wait()
         os.chdir(BASE_DIR)
@@ -100,5 +105,4 @@ class ProcessSelectedTests:
         #     universal_newlines=True
         # )
         # delete_process.communicate(self.sudo_password + '\n')
-        # subprocess.Popen(['poetry', 'update']).wait()
-        subprocess.Popen(['sudo', '/root/.local/bin/poetry', 'update']).wait()
+        subprocess.Popen([*self.poetry, 'update']).wait()
