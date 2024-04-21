@@ -72,7 +72,7 @@ class ProcessSelectedTests:
         os.chdir(f'{self.project_process_dir}')
         # subprocess.Popen(['poetry', 'config', 'virtualenvs.in-project', 'true']).wait()
         # subprocess.Popen(['poetry', 'update']).wait()
-        subprocess.Popen(['/root/.local/bin/poetry', 'update']).wait()
+        subprocess.Popen(['sudo', '/root/.local/bin/poetry', 'update']).wait()
         os.chdir(BASE_DIR)
 
     def run_tests(self, select_all_tests: bool, selected_tests: list):
@@ -101,4 +101,4 @@ class ProcessSelectedTests:
         # )
         # delete_process.communicate(self.sudo_password + '\n')
         # subprocess.Popen(['poetry', 'update']).wait()
-        subprocess.Popen(['/root/.local/bin/poetry', 'update']).wait()
+        subprocess.Popen(['sudo', '/root/.local/bin/poetry', 'update']).wait()
